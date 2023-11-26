@@ -1,10 +1,7 @@
-import mvc.View;
-import mvc.Controller;
+import mvc;
 
-public class Main {
-    public static void main(String[] args) {
+   public static void main(String[] args) {
         View view = new View();
         Controller controller = new Controller(view);
         view.setVisible(true);
     }
-}

@@ -25,6 +25,9 @@ public class Cache {
     private float avgMemoryAccessTime;
     private float totalMemoryAccessTime;
 
+    //"Print" statements
+    private ArrayList<String> simLog;
+
     public Cache (int blockCount, int cacheLine, String readPolicy, int memoryBlockCount, int setCount){
         //initialize cache specs 
         this.blockCount = blockCount; 
@@ -33,6 +36,7 @@ public class Cache {
         this.memoryBlockCount= memoryBlockCount;
         this.setSize= setCount;
         this.cache= new Set [this.blockCount / this.setSize]; 
+        intlCacheArray();
 
         //initialize outputs 
         this.memoryAccessCount= 0; 
@@ -54,6 +58,7 @@ public class Cache {
         this.readPolicy= ReadPolicy.valueOf("NLT"); 
         this.setSize= 4;//blocks
         this.cache= new Set [this.blockCount / this.setSize]; 
+        intlCacheArray();
         //initialize outputs 
         this.memoryAccessCount= 0; 
         this.hitCount= 0;
@@ -64,31 +69,47 @@ public class Cache {
         this.totalMemoryAccessTime= 0;
     }
 
-    public ArrayList<String> simulateCache (int [] sequence) {
-        ArrayList<String> simLog = new ArrayList <String> (); //treat as print statements 
-        int setIndex, foundBlockIndex, sequenceData;
+    private void intlCacheArray () {
+        for (int i = 0; i < this.cache.length; i++) {
+            this.cache[i] = new Set();
+        }
+    }
 
-        for(int i=0; i<sequence.length; i++){            
-            setIndex= sequence[i] % this.setSize; 
-            sequenceData= sequence[i];
-            
-            foundBlockIndex= findSequence(sequence[i]); //Is sequence data in the set?
-            
-            if (foundBlockIndex != 0){ 
-                simLog.add(sequenceData + "was found.");
-                simLog.add("In set "+setIndex+"block "+foundBlockIndex);
-                simLog.add("hits: "+ this.hitCount+ "| new block age: "+ cache[setIndex].incBlockAge(foundBlockIndex));
+    public ArrayList<String> simulateCache(int[] sequence) {
+        simLog = new ArrayList<String>(); // treat as print statements
+        int setIndex, foundBlockIndex, sequenceData;
+    
+        for (int i = 0; i < sequence.length; i++) {
+            setIndex = sequence[i] % this.setSize;
+            sequenceData = sequence[i];
+    
+            foundBlockIndex = cache[setIndex].findSequence(sequence[i]); // Is sequence data in the set?
+    
+            if (foundBlockIndex != -1) {
+                simLog.add(sequenceData + " was found.\n" +
+                            "In set " + setIndex + " block " + foundBlockIndex + "\n" +
+                            "hits: " + this.hitCount + "| new block age: " + cache[setIndex].incBlockAge(foundBlockIndex));
                 this.hitCount++;
-            }else{ 
-                //logic for MRU handled in Set 
-                simLog.add(sequenceData + "not in cache.");
-                simLog.add("Added to set "+setIndex+"block "+ cache[setIndex].setBlockData(sequenceData));
-                simLog.add("misses: "+ this.missCount);
+            } else {
+                // logic for MRU handled in Set
+                simLog.add(sequenceData + " not in cache.\n" +
+                            "Added to set " + setIndex + " block " + cache[setIndex].setBlockData(sequenceData) + "\n" +
+                            "misses: " + this.missCount);
                 this.missCount++;
             }
         }
-
+    
         simLog.add(calculateOutputs());
         return simLog;
     }
+    
+
+    public String calculateOutputs(){
+        return "calculated outputs:";
+    }
+
+    public ArrayList<String> getSimLog() {
+        return simLog;
+    }
+
 }
