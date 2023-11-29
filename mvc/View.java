@@ -15,10 +15,10 @@ public class View extends JFrame {
     private JTextField sequenceSizeField;
     private JTextArea sequenceTextArea;
     private JTextArea simLogTextArea;
-    private Controller controller;
     private JLabel currentSetLabel;
     private JLabel currentBlockLabel;
     private JLabel currentSequenceLabel;
+    private Controller controller;
 
     public void registerController(Controller controller) {
         this.controller = controller;
@@ -31,7 +31,7 @@ public class View extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(8, 2));
+        panel.setLayout(new GridLayout(13, 4));
 
         //  input fields
         panel.add(new JLabel("Cache Size:"));
@@ -63,6 +63,7 @@ public class View extends JFrame {
         JScrollPane sequenceScrollPane = new JScrollPane(sequenceTextArea);
         panel.add(sequenceScrollPane);
 
+        // labels for displaying set info
         currentSetLabel = new JLabel("Current Set: ");
         panel.add(currentSetLabel);
 
@@ -80,6 +81,11 @@ public class View extends JFrame {
         simLogTextArea = new JTextArea();
         JScrollPane simLogScrollPane = new JScrollPane(simLogTextArea);
         panel.add(simLogScrollPane);
+
+        // sequence log area
+        JTextArea outputTextArea = new JTextArea();
+        JScrollPane outputScrollPane = new JScrollPane(outputTextArea);
+        panel.add(outputScrollPane);
 
         //  action listener for the simulate button
         simulateButton.addActionListener(new ActionListener() {
@@ -108,7 +114,7 @@ public class View extends JFrame {
 
             ArrayList<String> simLog = cache.simulateCache(sequence);
 
-            // Display simulation log
+            // display simulation log
             simLogTextArea.setText("");
             for (String log : simLog) {
                 simLogTextArea.append(log + "\n");
@@ -132,12 +138,12 @@ public class View extends JFrame {
     public void updateGUI(int sequenceData, int setIndex, int foundBlockIndex) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                // display step info
+                // display current set info
                 currentSetLabel.setText("Current Set: " + setIndex);
                 currentBlockLabel.setText("Current Block: " + foundBlockIndex);
                 currentSequenceLabel.setText("Current Sequence: " + sequenceData);
 
-                // put this here lang just incase
+                // just in case
                 revalidate();
                 repaint();
             }
