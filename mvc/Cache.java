@@ -107,12 +107,13 @@ public class Cache {
     }
 
     public String calculateOutputs(){
-        int totalCount = hitCount + missCount;
+        float totalCount = hitCount + missCount;
         hitRate = hitCount / totalCount;
         missRate = missCount / totalCount;
+        int missPenalty = 1 + cacheLine * 10 + 1;
 
         // CHANGE TO PROPER FORMULA
-        avgMemoryAccessTime = hitCount / totalCount + (1 + cacheLine * 10 + 1 * missCount) / totalCount;
+        avgMemoryAccessTime = hitRate + (1 - hitRate) * missPenalty;
         totalMemoryAccessTime = avgMemoryAccessTime * blockCount;
 
         return String.format("Hit Rate: %.2f\nMiss Rate: %.2f\nAvg Memory Access Time: %.2f\nTotal Memory Access Time: %.2f",
