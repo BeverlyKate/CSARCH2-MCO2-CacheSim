@@ -24,6 +24,7 @@ public class Cache {
     private float missRate;
     private float avgMemoryAccessTime;
     private float totalMemoryAccessTime;
+    private View view;
 
     //"Print" statements
     private ArrayList<String> simLog;
@@ -32,6 +33,7 @@ public class Cache {
         //initialize cache specs
         this.blockCount = blockCount;
         this.cacheLine= cacheLine;
+        this.view = view;
         this.readPolicy= ReadPolicy.valueOf(readPolicy);
         this.memoryBlockCount= memoryBlockCount;
         this.setSize= setCount;
@@ -86,27 +88,34 @@ public class Cache {
             foundBlockIndex = cache[setIndex].findSequence(sequence[i]); // is sequence data in the set?
 
             if (foundBlockIndex != -1) {
-                // add info in log arr
+                // add info to the log array
                 simLog.add("Data: " + sequenceData + " was found in Set " + setIndex + ", Block " + foundBlockIndex);
                 this.hitCount++;
             } else {
-                // add info in logg arr
+                // add info to the log array
                 simLog.add("Data: " + sequenceData + " not in cache. Added to Set " + setIndex);
                 this.missCount++;
             }
             // update GUI
-            View.updateGUI(sequenceData, setIndex, foundBlockIndex);
+            if (view != null) {
+                view.updateGUI(sequenceData, setIndex, foundBlockIndex);
+            }
         }
 
         simLog.add(calculateOutputs());
         return simLog;
     }
 
-
-
-
     public String calculateOutputs(){
-        return "calculated outputs:";
+        hitRate = hitCount / (hitCount + missCount);
+        missRate = missCount / (missCount + hitCount);
+
+        // CHANGE TO PROPER FORMULA
+        avgMemoryAccessTime = hitRate;
+        totalMemoryAccessTime = missRate;
+
+        return String.format("Hit Rate: %.2f\nMiss Rate: %.2f\nAvg Memory Access Time: %.2f\nTotal Memory Access Time: %.2f",
+                            hitRate, missRate, avgMemoryAccessTime, totalMemoryAccessTime);
     }
 
     public ArrayList<String> getSimLog() {
