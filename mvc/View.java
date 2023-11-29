@@ -16,6 +16,9 @@ public class View extends JFrame {
     private JTextArea sequenceTextArea;
     private JTextArea simLogTextArea;
     private Controller controller;
+    private JLabel currentSetLabel;
+    private JLabel currentBlockLabel;
+    private JLabel currentSequenceLabel;
 
     public void registerController(Controller controller) {
         this.controller = controller;
@@ -59,6 +62,15 @@ public class View extends JFrame {
         sequenceTextArea = new JTextArea();
         JScrollPane sequenceScrollPane = new JScrollPane(sequenceTextArea);
         panel.add(sequenceScrollPane);
+
+        currentSetLabel = new JLabel("Current Set: ");
+        panel.add(currentSetLabel);
+
+        currentBlockLabel = new JLabel("Current Block: ");
+        panel.add(currentBlockLabel);
+
+        currentSequenceLabel = new JLabel("Current Sequence: ");
+        panel.add(currentSequenceLabel);
 
         //buttons
         JButton simulateButton = new JButton("Simulate");
@@ -115,6 +127,21 @@ public class View extends JFrame {
             sequence[i] = Integer.parseInt(parts[i].trim());
         }
         return sequence;
+    }
+
+    public void updateGUI(int sequenceData, int setIndex, int foundBlockIndex) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // display step info
+                currentSetLabel.setText("Current Set: " + setIndex);
+                currentBlockLabel.setText("Current Block: " + foundBlockIndex);
+                currentSequenceLabel.setText("Current Sequence: " + sequenceData);
+
+                // put this here lang just incase
+                revalidate();
+                repaint();
+            }
+        });
     }
 
     public int getBlockCount() {
