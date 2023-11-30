@@ -77,5 +77,5 @@ public class Set {
     public int[][] getSetArr() {
         return setArr;
     }
-
+    
 }

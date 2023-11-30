@@ -28,6 +28,7 @@ public class Cache {
 
     //"Print" statements
     private ArrayList<String> simLog;
+    private ArrayList<Step> stepLog;
 
     public Cache (int blockCount, int cacheLine, String readPolicy, int memoryBlockCount, int setCount){
         //initialize cache specs
@@ -79,6 +80,8 @@ public class Cache {
 
     public ArrayList<String> simulateCache(int[] sequence) {
         simLog = new ArrayList<String>(); // treat as print statements
+        stepLog = new ArrayList<Step>();
+
         int setIndex, foundBlockIndex, sequenceData;
 
         for (int i = 0; i < sequence.length; i++) {
@@ -88,14 +91,20 @@ public class Cache {
             foundBlockIndex = cache[setIndex].findSequence(sequence[i]); // is sequence data in the set?
 
             if (foundBlockIndex != -1) {
-                // add info to the log array
-                simLog.add("Data: " + sequenceData + " was found in Set " + setIndex + ", Block " + foundBlockIndex);
                 this.hitCount++;
+                simLog.add(sequenceData + " was found.\n" +
+                            "In set " + setIndex + " block " + foundBlockIndex + "\n" +
+                            "hits: " + this.hitCount + "| new block age: " + cache[setIndex].incBlockAge(foundBlockIndex));
+
             } else {
-                // add info to the log array
-                simLog.add("Data: " + sequenceData + " not in cache. Added to Set " + setIndex);
+                // logic for MRU handled in Set
                 this.missCount++;
+                simLog.add(sequenceData + " not in cache.\n" +
+                            "Added to set " + setIndex + " block " + cache[setIndex].setBlockData(sequenceData) + "\n" +
+                            "misses: " + this.missCount);
             }
+            stepLog.add(new Step(sequenceData, setIndex, foundBlockIndex, i));
+
             // update GUI
             if (view != null) {
                 view.updateGUI(sequenceData, setIndex, foundBlockIndex);
@@ -120,8 +129,13 @@ public class Cache {
                             hitRate, missRate, avgMemoryAccessTime, totalMemoryAccessTime);
     }
 
+    public Set[] getCache() {
+        return cache;
+    }
+
     public ArrayList<String> getSimLog() {
         return simLog;
     }
 
+    
 }

@@ -1,10 +1,17 @@
 package mvc;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
+
 
 public class View extends JFrame {
     private JTextField cacheSizeField;
@@ -15,79 +22,139 @@ public class View extends JFrame {
     private JTextField sequenceSizeField;
     private JTextArea sequenceTextArea;
     private JTextArea simLogTextArea;
+    private JLabel currentSetField;
+    private JLabel currentBlockField;
+    private JLabel currentSequenceField;
     private JLabel currentSetLabel;
     private JLabel currentBlockLabel;
     private JLabel currentSequenceLabel;
     private Controller controller;
+    private JTable cacheTable;
+    private JTable sequenceTable;
+    private JButton nextButton;
+    private JButton prevButton;
+    private JButton skipToEndButton;
+    private DefaultTableModel sequenceTableModel;
+    private DefaultTableModel cacheTableModel;
+    private JSplitPane tablePanes;
+
+    private JLabel emptylabel;
 
     public void registerController(Controller controller) {
         this.controller = controller;
     }
 
-
     public View() {
         setTitle("Cache Simulator");
-        setSize(600, 400);
+        setSize(1080, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(13, 4));
+        JSplitPane mainPanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        mainPanel.setResizeWeight(0.25);
 
-        //  input fields
-        panel.add(new JLabel("Cache Size:"));
+        JSplitPane leftSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        leftSplitPane.setResizeWeight(0.5);
+
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new GridLayout(11, 2));
+        JPanel simLogPanel = new JPanel(new BorderLayout());
+
+        JPanel rightPanel= new JPanel();
+        mainPanel.setRightComponent(rightPanel);
+
+        JPanel controlPanel = new JPanel(new FlowLayout());
+        tablePanes= new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        tablePanes.setResizeWeight(0.25);
+        //rightPanel.add(controlPanel, BorderLayout.NORTH);
+        //rightPanel.add(tablePanes, BorderLayout.CENTER);
+
+        sequenceTable = new JTable();
+        this.sequenceTableModel = new DefaultTableModel(new Object[]{"Main memory"}, 0);
+        sequenceTable.setModel(sequenceTableModel);
+        setColumnWidths(sequenceTable);
+        JScrollPane sequenceTableScrollPane = new JScrollPane(sequenceTable);
+        tablePanes.setRightComponent(sequenceTableScrollPane);
+
+
+        cacheTable = new JTable();
+        this.cacheTableModel = new DefaultTableModel(new Object[]{"Cache memory"}, 0);
+        cacheTable.setModel(cacheTableModel);
+        setColumnWidths(cacheTable);
+        JScrollPane cacheTableScrollPane = new JScrollPane(cacheTable);
+        tablePanes.setLeftComponent(cacheTableScrollPane);
+
+
+        inputPanel.add(new JLabel("Cache Size (in blocks):"));
         cacheSizeField = new JTextField("32");
-        panel.add(cacheSizeField);
+        inputPanel.add(cacheSizeField);
 
-        panel.add(new JLabel("Block Size:"));
+        inputPanel.add(new JLabel("Block Size (in words):"));
         blockSizeField = new JTextField("16");
-        panel.add(blockSizeField);
+        inputPanel.add(blockSizeField);
 
-        panel.add(new JLabel("Read Policy (NLT or LT):"));
+        inputPanel.add(new JLabel("Read Policy (NLT or LT):"));
         readPolicyField = new JTextField("NLT");
-        panel.add(readPolicyField);
+        inputPanel.add(readPolicyField);
 
-        panel.add(new JLabel("Memory Size (in blocks):"));
+        inputPanel.add(new JLabel("Memory Size (in blocks):"));
         memorySizeField = new JTextField();
-        panel.add(memorySizeField);
+        inputPanel.add(memorySizeField);
 
-        panel.add(new JLabel("Set Count:"));
+        inputPanel.add(new JLabel("Set size:"));
         setCountField = new JTextField("4");
-        panel.add(setCountField);
+        inputPanel.add(setCountField);
 
-        panel.add(new JLabel("Sequence Size:"));
+        inputPanel.add(new JLabel("Sequence Size:"));
         sequenceSizeField = new JTextField();
-        panel.add(sequenceSizeField);
+        inputPanel.add(sequenceSizeField);
 
-        panel.add(new JLabel("Sequence Data (comma-separated):"));
+        inputPanel.add(new JLabel("Sequence Data (comma-separated):"));
         sequenceTextArea = new JTextArea();
         JScrollPane sequenceScrollPane = new JScrollPane(sequenceTextArea);
-        panel.add(sequenceScrollPane);
+        inputPanel.add(sequenceScrollPane);
 
-        // labels for displaying set info
-        currentSetLabel = new JLabel("Current Set: ");
-        panel.add(currentSetLabel);
+        inputPanel.add(new JLabel("Current set: "));
+        currentSetField = new JLabel();
+        inputPanel.add(currentSetField);
 
-        currentBlockLabel = new JLabel("Current Block: ");
-        panel.add(currentBlockLabel);
+        inputPanel.add(new JLabel("Current Block: "));
+        currentBlockField = new JLabel();
+        inputPanel.add(currentBlockField);
 
-        currentSequenceLabel = new JLabel("Current Sequence: ");
-        panel.add(currentSequenceLabel);
+        inputPanel.add(new JLabel("Current Sequence: "));
+        currentSequenceField = new JLabel();
+        inputPanel.add(currentSequenceField);
 
-        //buttons
         JButton simulateButton = new JButton("Simulate");
-        panel.add(simulateButton);
+        inputPanel.add(simulateButton);
 
-        //  simulation log area
-        simLogTextArea = new JTextArea();
+        emptylabel= new JLabel();
+        inputPanel.add(emptylabel);
+
+        simLogTextArea = new JTextArea("Sim log will appear here.");
         JScrollPane simLogScrollPane = new JScrollPane(simLogTextArea);
-        panel.add(simLogScrollPane);
+        simLogPanel.add(simLogScrollPane);
 
-        // sequence log area
-        JTextArea outputTextArea = new JTextArea();
-        JScrollPane outputScrollPane = new JScrollPane(outputTextArea);
-        panel.add(outputScrollPane);
+        leftSplitPane.setTopComponent(inputPanel);
+        leftSplitPane.setBottomComponent(simLogPanel);
+        mainPanel.setLeftComponent(leftSplitPane);
 
-        //  action listener for the simulate button
+        cacheTable = new JTable();
+        JScrollPane cacheScrollPane = new JScrollPane(cacheTable);
+        tablePanes.setLeftComponent(cacheScrollPane);
+
+        sequenceTable = new JTable();
+        rightPanel.add(tablePanes, BorderLayout.CENTER);
+        rightPanel.add(controlPanel, BorderLayout.NORTH);
+
+        nextButton = new JButton("Next");
+        prevButton = new JButton("Previous");
+        skipToEndButton = new JButton("Skip to End");
+
+        controlPanel.add(prevButton);
+        controlPanel.add(nextButton);
+        controlPanel.add(skipToEndButton);
+
         simulateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -95,7 +162,25 @@ public class View extends JFrame {
             }
         });
 
-        add(panel);
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        prevButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        skipToEndButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        });
+
+        add(mainPanel);
         setVisible(true);
     }
 
@@ -106,25 +191,71 @@ public class View extends JFrame {
             String readPolicy = readPolicyField.getText();
             int memorySize = Integer.parseInt(memorySizeField.getText());
             int setCount = Integer.parseInt(setCountField.getText());
-
+    
             Cache cache = new Cache(cacheSize, blockSize, readPolicy, memorySize, setCount);
-
+    
             int sequenceSize = Integer.parseInt(sequenceSizeField.getText());
             int[] sequence = parseSequence(sequenceTextArea.getText());
-
+    
             ArrayList<String> simLog = cache.simulateCache(sequence);
-
-            // display simulation log
+    
             simLogTextArea.setText("");
             for (String log : simLog) {
                 simLogTextArea.append(log + "\n");
             }
-
+    
+            // Display cache data
+            Set[] cacheArray = cache.getCache();
+            Object[][] cacheData = new Object[cacheArray.length * cacheArray[0].getBlocks()][2];
+    
+            int row = 0;
+            for (Set set : cacheArray) {
+                int[][] setArr = set.getSetArr();
+                for (int blockIndex = 0; blockIndex < set.getBlocks(); blockIndex++) {
+                    cacheData[row][0] = setArr[blockIndex][Set.DATA_COL]; // Data
+                    cacheData[row][1] = setArr[blockIndex][Set.AGE_COL]; // Age
+                    row++;
+                }
+            }
+    
+            // Bold border indices
+            List<Integer> boldBorderIndices = new ArrayList<>();
+            for (int i = 0; i < cacheData.length; i++) {
+                if (i % setCount == 0 && i != 0) {
+                    boldBorderIndices.add(i - 1); // Index of the last row in each set
+                }
+            }
+    
+            cacheTableModel = new DefaultTableModel(cacheData, new Object[]{"Data", "Age"});
+            cacheTable.setModel(cacheTableModel);
+    
+            JScrollPane cacheScrollPane = new JScrollPane(cacheTable);
+            tablePanes.setLeftComponent(cacheScrollPane);
+    
             controller.startSimulation(sequence);
+    
+            sequenceTableModel.setRowCount(0);
+            for (int i = 0; i < sequence.length; i++) {
+                sequenceTableModel.addRow(new Object[]{sequence[i]});
+            }
+            sequenceTable.setModel(sequenceTableModel);
+    
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Invalid input. Please enter valid numbers.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    private void setColumnWidths(JTable table) {
+        TableColumnModel columnModel = table.getColumnModel();
+        int columnCount = columnModel.getColumnCount();
+    
+        for (int i = 0; i < columnCount; i++) {
+            TableColumn column = columnModel.getColumn(i);
+            column.setMaxWidth(5 * 15); // Adjust the multiplier and constant as needed
+        }
+    }
+    
+    
 
     private int[] parseSequence(String sequenceData) {
         String[] parts = sequenceData.split(",");
@@ -138,12 +269,10 @@ public class View extends JFrame {
     public void updateGUI(int sequenceData, int setIndex, int foundBlockIndex) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                // display current set info
-                currentSetLabel.setText("Current Set: " + setIndex);
-                currentBlockLabel.setText("Current Block: " + foundBlockIndex);
-                currentSequenceLabel.setText("Current Sequence: " + sequenceData);
+                currentSetField.setText("" + setIndex);
+                currentBlockField.setText("" + foundBlockIndex);
+                currentSequenceLabel.setText("" + sequenceData);
 
-                // just in case
                 revalidate();
                 repaint();
             }
