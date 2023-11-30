@@ -40,6 +40,11 @@ public class View extends JFrame {
 
     private JLabel emptylabel;
 
+    private ArrayList<Step> stepLog;
+    private int currentStepIndex;
+    private JLabel currentSequenceData;
+
+
     public void registerController(Controller controller) {
         this.controller = controller;
     }
@@ -56,7 +61,7 @@ public class View extends JFrame {
         leftSplitPane.setResizeWeight(0.5);
 
         JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridLayout(11, 2));
+        inputPanel.setLayout(new GridLayout(12, 2));
         JPanel simLogPanel = new JPanel(new BorderLayout());
 
         JPanel rightPanel= new JPanel();
@@ -121,9 +126,13 @@ public class View extends JFrame {
         currentBlockField = new JLabel();
         inputPanel.add(currentBlockField);
 
-        inputPanel.add(new JLabel("Current Sequence: "));
+        inputPanel.add(new JLabel("Current Sequence Index: "));
         currentSequenceField = new JLabel();
         inputPanel.add(currentSequenceField);
+
+        currentSequenceData = new JLabel();
+        inputPanel.add(new JLabel("Current Sequence Data: "));
+        inputPanel.add(currentSequenceData);        
 
         JButton simulateButton = new JButton("Simulate");
         inputPanel.add(simulateButton);
@@ -165,18 +174,21 @@ public class View extends JFrame {
         nextButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                showNextStep();
             }
         });
-
+    
         prevButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                showPreviousStep();
             }
         });
-
+    
         skipToEndButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                showLastStep();
             }
         });
 
@@ -239,6 +251,11 @@ public class View extends JFrame {
                 sequenceTableModel.addRow(new Object[]{sequence[i]});
             }
             sequenceTable.setModel(sequenceTableModel);
+
+            stepLog = cache.getStepLog();
+            currentStepIndex = 0;
+    
+            showStep(stepLog.get(currentStepIndex));
     
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Invalid input. Please enter valid numbers.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -255,7 +272,37 @@ public class View extends JFrame {
         }
     }
     
+    private void showStep(Step step) {
+        currentSetField.setText(String.valueOf(step.getSetIndex()));
+        currentBlockField.setText(String.valueOf(step.getFoundBlockIndex()));
+        currentSequenceField.setText(String.valueOf(step.getSequenceIndex()));
+        currentSequenceData.setText(String.valueOf(step.getSequenceData()));
+
+        revalidate();
+        repaint();
+    }
+
     
+    private void showNextStep() {
+        if (stepLog != null && currentStepIndex < stepLog.size() - 1) {
+            currentStepIndex++;
+            showStep(stepLog.get(currentStepIndex));
+        }
+    }
+    
+    private void showPreviousStep() {
+        if (stepLog != null && currentStepIndex > 0) {
+            currentStepIndex--;
+            showStep(stepLog.get(currentStepIndex));
+        }
+    }
+    
+    private void showLastStep() {
+        if (stepLog != null && !stepLog.isEmpty()) {
+            currentStepIndex = stepLog.size() - 1;
+            showStep(stepLog.get(currentStepIndex));
+        }
+    }
 
     private int[] parseSequence(String sequenceData) {
         String[] parts = sequenceData.split(",");

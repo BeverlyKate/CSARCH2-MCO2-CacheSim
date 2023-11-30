@@ -30,6 +30,8 @@ public class Cache {
     private ArrayList<String> simLog;
     private ArrayList<Step> stepLog;
 
+
+
     public Cache (int blockCount, int cacheLine, String readPolicy, int memoryBlockCount, int setCount){
         //initialize cache specs
         this.blockCount = blockCount;
@@ -137,5 +139,8 @@ public class Cache {
         return simLog;
     }
 
-    
+    public ArrayList<Step> getStepLog() {
+        return stepLog;
+    }
+
 }
