@@ -15,99 +15,79 @@ public class View extends JFrame {
     private JTextField sequenceSizeField;
     private JTextArea sequenceTextArea;
     private JTextArea simLogTextArea;
+    private JLabel currentSetLabel;
+    private JLabel currentBlockLabel;
+    private JLabel currentSequenceLabel;
     private Controller controller;
-    private JButton simulateButton;
-    private JTable cacheTable;
-    private JTable sequenceTable;
-    private JButton nextButton;
-    private JButton prevButton;
-    private JButton skipToEndButton;
-    private int currentStep;
 
     public void registerController(Controller controller) {
         this.controller = controller;
     }
 
+
     public View() {
         setTitle("Cache Simulator");
-        setSize(800, 600);
+        setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(13, 4));
 
-        JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new GridLayout(8, 2));
-
-        // Add input fields
-        inputPanel.add(new JLabel("Cache Size:"));
+        //  input fields
+        panel.add(new JLabel("Cache Size:"));
         cacheSizeField = new JTextField("32");
-        inputPanel.add(cacheSizeField);
+        panel.add(cacheSizeField);
 
-        inputPanel.add(new JLabel("Block Size:"));
+        panel.add(new JLabel("Block Size:"));
         blockSizeField = new JTextField("16");
-        inputPanel.add(blockSizeField);
+        panel.add(blockSizeField);
 
-        inputPanel.add(new JLabel("Read Policy (NLT or LT):"));
+        panel.add(new JLabel("Read Policy (NLT or LT):"));
         readPolicyField = new JTextField("NLT");
-        inputPanel.add(readPolicyField);
+        panel.add(readPolicyField);
 
-        inputPanel.add(new JLabel("Memory Size (in blocks):"));
+        panel.add(new JLabel("Memory Size (in blocks):"));
         memorySizeField = new JTextField();
-        inputPanel.add(memorySizeField);
+        panel.add(memorySizeField);
 
-        inputPanel.add(new JLabel("Set Count:"));
+        panel.add(new JLabel("Set Count:"));
         setCountField = new JTextField("4");
-        inputPanel.add(setCountField);
+        panel.add(setCountField);
 
-        inputPanel.add(new JLabel("Sequence Size:"));
+        panel.add(new JLabel("Sequence Size:"));
         sequenceSizeField = new JTextField();
-        inputPanel.add(sequenceSizeField);
+        panel.add(sequenceSizeField);
 
-        inputPanel.add(new JLabel("Sequence Data (comma-separated):"));
+        panel.add(new JLabel("Sequence Data (comma-separated):"));
         sequenceTextArea = new JTextArea();
-        JScrollPane sequenceScrollPane1 = new JScrollPane(sequenceTextArea);
-        inputPanel.add(sequenceScrollPane1);
+        JScrollPane sequenceScrollPane = new JScrollPane(sequenceTextArea);
+        panel.add(sequenceScrollPane);
 
-        simulateButton = new JButton("Simulate");
-        inputPanel.add(simulateButton);
+        // labels for displaying set info
+        currentSetLabel = new JLabel("Current Set: ");
+        panel.add(currentSetLabel);
 
-        mainPanel.add(inputPanel, BorderLayout.WEST);
+        currentBlockLabel = new JLabel("Current Block: ");
+        panel.add(currentBlockLabel);
 
-        // Create cache table
-        cacheTable = new JTable();
-        // ... (initialize table model and configure as needed)
-        JScrollPane cacheScrollPane = new JScrollPane(cacheTable);
-        mainPanel.add(cacheScrollPane, BorderLayout.CENTER);
+        currentSequenceLabel = new JLabel("Current Sequence: ");
+        panel.add(currentSequenceLabel);
 
-        // Create sequence table
-        sequenceTable = new JTable();
-        // (initialize table model)
-        JScrollPane sequenceScrollPane = new JScrollPane(sequenceTable);
-        mainPanel.add(sequenceScrollPane, BorderLayout.EAST);
+        //buttons
+        JButton simulateButton = new JButton("Simulate");
+        panel.add(simulateButton);
 
-        // Create a panel for simulation log
-        JPanel simLogPanel = new JPanel(new BorderLayout());
+        //  simulation log area
         simLogTextArea = new JTextArea();
         JScrollPane simLogScrollPane = new JScrollPane(simLogTextArea);
-        simLogPanel.add(simLogScrollPane, BorderLayout.CENTER);
+        panel.add(simLogScrollPane);
 
-        // Add simulation log panel to the south
-        mainPanel.add(simLogPanel, BorderLayout.SOUTH);
+        // sequence log area
+        JTextArea outputTextArea = new JTextArea();
+        JScrollPane outputScrollPane = new JScrollPane(outputTextArea);
+        panel.add(outputScrollPane);
 
-        // Add control buttons
-        JPanel controlPanel = new JPanel(new FlowLayout());
-        nextButton = new JButton("Next");
-        prevButton = new JButton("Previous");
-        skipToEndButton = new JButton("Skip to End");
-
-        controlPanel.add(prevButton);
-        controlPanel.add(nextButton);
-        controlPanel.add(skipToEndButton);
-
-        // Add control panel to the north
-        mainPanel.add(controlPanel, BorderLayout.NORTH);
-
-        // Set action listener for the simulate button
+        //  action listener for the simulate button
         simulateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -115,32 +95,7 @@ public class View extends JFrame {
             }
         });
 
-        // Set action listeners for control buttons
-        nextButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Implement logic to show the next step
-            }
-        });
-
-        prevButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Implement logic to show the previous step
-            }
-        });
-
-        skipToEndButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Implement logic to skip to the end
-            }
-        });
-
-        // Add main panel to the frame
-        add(mainPanel);
-
-        // Set the frame visible after all components are added
+        add(panel);
         setVisible(true);
     }
 
@@ -159,7 +114,7 @@ public class View extends JFrame {
 
             ArrayList<String> simLog = cache.simulateCache(sequence);
 
-            // Display simulation log
+            // display simulation log
             simLogTextArea.setText("");
             for (String log : simLog) {
                 simLogTextArea.append(log + "\n");
@@ -180,6 +135,21 @@ public class View extends JFrame {
         return sequence;
     }
 
+    public void updateGUI(int sequenceData, int setIndex, int foundBlockIndex) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                // display current set info
+                currentSetLabel.setText("Current Set: " + setIndex);
+                currentBlockLabel.setText("Current Block: " + foundBlockIndex);
+                currentSequenceLabel.setText("Current Sequence: " + sequenceData);
+
+                // just in case
+                revalidate();
+                repaint();
+            }
+        });
+    }
+
     public int getBlockCount() {
         return Integer.parseInt(cacheSizeField.getText());
     }
@@ -198,12 +168,6 @@ public class View extends JFrame {
 
     public int getSetCount() {
         return Integer.parseInt(setCountField.getText());
-    }
-
-    public void updateSimulationResults(ArrayList<String> simLog) {
-        for (String msg : simLog) {
-            simLogTextArea.append(msg + "\n");
-        }
     }
 
     public static void main(String[] args) {
